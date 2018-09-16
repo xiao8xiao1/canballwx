@@ -23,7 +23,7 @@ var PlaceUi = function (paraUi) {
   {
   var colorIndex = 6;
   groupStart = ui.createRectangle(0, 0, ui.width, ui.height, window.bgColor)//colors[colorIndex][0], colors[colorIndex][1]);
-    var gameName = ui.createText('脑力操: 3D快乐方块', 40, family, 'black', 25, 154);
+    var gameName = ui.createText('让球球飞', 40, family, 'black', 119, 154);
     gameName.textBaseline = 'top';  gameName.fontWeight = 'bold';
 
     var rectBegin = ui.createRectangle( 98, 447, 218, 64, '#FFFFFF');

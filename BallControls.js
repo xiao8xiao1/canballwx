@@ -17,17 +17,18 @@ var BallControls = function(camera, domElement, ballProcess) {
 
     var selectBall = null;
     var ray = new THREE.Raycaster();
-    //wx.onTouchStart(onMouseDown)
-    // wx.onTouchMove(onMouseMove)
-    //wx.onTouchEnd(onMouseUp)
-	domElement.addEventListener( 'touchstart', onMouseDown, false );
-	domElement.addEventListener( 'touchend', onMouseUp, false );
-    domElement.addEventListener( 'touchmove', onMouseMove, false );    
-    domElement.addEventListener("mousedown", onMouseDown, false );
-    domElement.addEventListener("mousemove", onMouseMove, false );
-    domElement.addEventListener("mouseup", onMouseUp, false );
+    var startPointer = new THREE.Vector2();
+    var endPointer = new THREE.Vector2();
 
-
+    wx.onTouchStart(onMouseDown)
+    wx.onTouchMove(onMouseMove)
+    wx.onTouchEnd(onMouseUp)
+	// domElement.addEventListener( 'touchstart', onMouseDown, false );
+	// domElement.addEventListener( 'touchend', onMouseUp, false );
+    // domElement.addEventListener( 'touchmove', onMouseMove, false );    
+    // domElement.addEventListener("mousedown", onMouseDown, false );
+    // domElement.addEventListener("mousemove", onMouseMove, false );
+    // domElement.addEventListener("mouseup", onMouseUp, false );
     // this.dispose = function () {
     //  window.removeEventListener( 'mousedown', onMouseDown, false );
     //  window.removeEventListener( 'mousemove', onMouseMove, false );
@@ -38,13 +39,11 @@ var BallControls = function(camera, domElement, ballProcess) {
         if ( scope.enabled === false ) return;       
         clock.getDelta();
         // Find mesh from a ray
-        var pointer;
-        if (e instanceof TouchEvent) 
-            pointer = e.touches[0];
-        else
-            pointer = { clientX: e.pageX, clientY: e.pageY };
-
-        var entity = intersectObjects(pointer.clientX, pointer.clientY, scope.arrBall)
+        var pointer = e.changedTouches ? e.changedTouches[0] : e;
+        startPointer.x = pointer.clientX;
+        startPointer.y = pointer.clientY;
+            
+        var entity = intersectObjects(startPointer.x, startPointer.y, scope.arrBall)
         // var pos = entity.point;
         if(/*pos &&*/ entity){
             selectBall = entity.object
@@ -56,34 +55,37 @@ var BallControls = function(camera, domElement, ballProcess) {
             // if(idx !== -1){
             // }
         }
+        // e.preventDefault();
+        // e.stopPropagation();        
     }
     function onMouseMove(e){
         if ( scope.enabled === false ) return;
         if (!selectBall) return;
-        //event.stopPropagation();
         // Move and project on the plane
         // if (gplane) {
         //    var pos = projectOntoPlane(e.clientX,e.clientY,gplane,camera);
         //    if(pos){
         //    }
         // }
+        // e.preventDefault();
+        // e.stopPropagation();
     }
     function onMouseUp(e) {
         if ( scope.enabled === false ) return;
         if (!selectBall) return;
         var delta = clock.getDelta();
-        var pointer;
-        if (e instanceof TouchEvent) 
-            pointer = e.changedTouches[0];
-        else
-            pointer = { clientX: e.pageX, clientY: e.pageY };
-
-        var entity = intersectObjects(pointer.clientX, pointer.clientY, scope.arrTarget)        
-        if(entity){
-            ballProcess.throwBall(selectBall, entity.point, delta)     
+        var pointer = e.changedTouches ? e.changedTouches[0] : e;
+        endPointer.x = pointer.clientX;
+        endPointer.y = pointer.clientY;               
+        var entity = intersectObjects(endPointer.x, endPointer.y, scope.arrTarget)
+        if(entity)
+        {
+            ballProcess.throwBall(selectBall, entity.point, delta, endPointer.sub(startPointer).length())
         }
         
         selectBall = null;
+        // e.preventDefault();
+        // e.stopPropagation();
     }
     function intersectObjects( clientX, clientY, objects ) {
         var x = ( clientX - rect.left ) / rect.width;
@@ -93,11 +95,6 @@ var BallControls = function(camera, domElement, ballProcess) {
         var intersections = ray.intersectObjects( objects, false );
         return intersections[ 0 ] ? intersections[ 0 ] : false;
     }
-
 }
-
-// BallControls.prototype = Object.assign( Object.create( THREE.EventDispatcher.prototype ), 
-//                                                         {constructor: BallControls})
-
 
 module.exports = BallControls;
