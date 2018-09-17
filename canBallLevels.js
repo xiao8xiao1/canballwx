@@ -88,11 +88,12 @@ var CanBallLevels = function(c, hp, ballControls, world){
         addCan(xPos-1.1*canRad, yPos + 1*canHeight, zPos);
         addCan(xPos+1.1*canRad, yPos + 1*canHeight, zPos);
         addCan(xPos , yPos + 2*canHeight, zPos);
+
     }
     //offsetPercent  (-0.9, 0.9)
     function pileUp111(xPos,yPos,zPos,offset){
         if (offset === undefined)
-            offset = (Math.random()*1.8-0.9)*canRad
+            offset = (Math.random()*0.5-1.0)*canRad
         addCan(xPos+offset, yPos, zPos);
         addCan(xPos, yPos + 1*canHeight, zPos);
         addCan(xPos+offset, yPos + 2*canHeight, zPos);
@@ -122,9 +123,16 @@ var CanBallLevels = function(c, hp, ballControls, world){
     {
         var zPos = -c.disdanceHalf+canRad, yPos=0;
         addDesk(c.deskHight, zPos); yPos+=c.deskHight;
+        pileUpTriangle(5,4,  0,yPos,zPos)
+        addBalls(3)
+    })        
+    levelFuncs.push(function()
+    {
+        var zPos = -c.disdanceHalf+canRad, yPos=0;
+        addDesk(c.deskHight, zPos); yPos+=c.deskHight;
         pileUp111(0, yPos,zPos, 0)
-        pileUp111(-canWidth-0.5*ballWidth, yPos,zPos,-0.2*canWidth)
-        pileUp111( canWidth+0.5*ballWidth, yPos,zPos,0.2*canWidth)
+        pileUp111(-canWidth-canRad, yPos,zPos, -0.8*canRad)
+        pileUp111( canWidth+canRad, yPos,zPos,  0.8*canRad)
         addBalls(3)
     })
     levelFuncs.push(function()
@@ -148,9 +156,9 @@ var CanBallLevels = function(c, hp, ballControls, world){
     levelFuncs.push(function()
     {
         addDesk(c.deskHight, -c.disdanceHalf+canRad)
-        pileUp111( 0,        c.deskHight,-c.disdanceHalf+canRad)
-        pileUp111( 4*canRad,c.deskHight,-c.disdanceHalf+canRad, -0.9)
-        pileUp111(-4*canRad,c.deskHight,-c.disdanceHalf+canRad,  0.9)
+        pileUp111( 0,       c.deskHight,-c.disdanceHalf+canRad)
+        pileUp111( 4*canRad,c.deskHight,-c.disdanceHalf+canRad )
+        // pileUp111(-4*canRad,c.deskHight,-c.disdanceHalf+canRad )
         addBalls(6)
     })
     levelFuncs.push(function()
@@ -168,7 +176,7 @@ var CanBallLevels = function(c, hp, ballControls, world){
     levelFuncs.push(function()
     {
         addDesk(c.deskHight, -c.disdanceHalf+canRad)
-        pileUpTriangle(3,3, 0,c.deskHight,-c.disdanceHalf)
+        pileUpTriangle(3,3, 0,c.deskHight,-c.disdanceHalf+canRad)
         addBalls(6)
     })
     levelFuncs.push(function()

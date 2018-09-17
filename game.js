@@ -144,19 +144,19 @@ function passDirLevel(){
 
 //html
 var c = new function () {
-  this.gravity = 10
-  this.cameraY = 20
-  this.cameraZ = 47
-  this.LookatY = 20
+  this.gravity = 20
+  this.cameraY = 15
+  this.cameraZ = 30
+  this.LookatY = 15
   this.LookatZ = 0
   this.zoom = 1
-  this.disdanceHalf = 20
+  this.disdanceHalf = 15
   this.forceFactor = 0.1
   this.groundY = 9
   this.roomWidth = 30
   this.deskHight = 10
   this.ballRad = 1
-  this.canRad = 1
+  this.canRad = 1.2
   this.canHeight = 4
   this.massBall = 5
   this.massCan = 10
@@ -201,7 +201,7 @@ function initThree() {
   particle = new Particle();    scene.add(particle.initParticles());
   ballControls = new BallControls(camera, renderer.domElement, ballProcess);
   // physics = new CannonHelper(0,-c.gravity,0, 1/60);  world=physics.world;
-  world = new OIMO.World({gravity: [0,-c.gravity,0]})
+  world = new OIMO.World({gravity: [0,-c.gravity,0], random:false, iterations:24})
   hp = new OimoHelper(world, scene);
   levels = new CanBallLevels(c, hp, ballControls, world)
   velocitySqLimit = (c.ballRad/world.timeStep); 
@@ -348,6 +348,11 @@ function flyingCheck(){
               minTimeStep = flyingBall.newTimeStep;
       }
   })
+  if (oldTimeStep !== world.timeStep) {
+    console.log(world.timeStep)
+  }
+
+  
   if (minTimeStep !== world.timeStep) {
       console.log('setTimeStep', minTimeStep)
       world.setTimeStep(minTimeStep);

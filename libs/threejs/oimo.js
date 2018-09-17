@@ -11853,7 +11853,8 @@
 
 	            if( base.isLonely() ){// update single body
 	                if( base.isDynamic ){
-	                    base.linearVelocity.addScaledVector( this.gravity, this.timeStep );
+						// base.linearVelocity.addScaledVector( this.gravity, this.timeStep );
+						base.linearVelocity.addEqual(this.gVel);
 	                    /*base.linearVelocity.x+=this.gravity.x*this.timeStep;
 	                    base.linearVelocity.y+=this.gravity.y*this.timeStep;
 	                    base.linearVelocity.z+=this.gravity.z*this.timeStep;*/
