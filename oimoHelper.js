@@ -1,5 +1,5 @@
-import * as OIMO from './oimo'
-import * as THREE from './three'
+// import * as OIMO from './libs/threejs/oimo'
+// import * as THREE from './libs/threejs/three'
 
 
 var OimoHelper = function  (world, scene) {

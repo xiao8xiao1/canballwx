@@ -4,6 +4,8 @@ import * as THREE from './libs/threejs/three'
 import './libs/threejs/controls/OrbitControls'
 import * as OIMO from './libs/threejs/oimo'
 // import CanBallLevels from 'canBallLevels'
+
+var Particle = require('Particle.js');
 var CanBallLevels = require('canBallLevels');
 
 // import TWEEN from './libs/threejs/tween.min'
@@ -12,9 +14,17 @@ var TWEEN = require('./libs/threejs/Tween')
 var AssetLoader = require('./libs/threejs/threeUi/AssetLoader');
 var ThreeUI = require('./libs/threejs/threeUi/ThreeUI.js');
 var PlaceUi = require('ui.js');
-var OimoHelper = require('./libs/threejs/oimoHelper');
+var OimoHelper = require('oimoHelper');
 var BallControls = require('BallControls.js');
-var Particle = require('Particle.js');
+var Config = require('config.js');
+var GameLogic = require('gameLogic.js');
+window.THREE = THREE
+window.OIMO = OIMO
+window.Particle = Particle
+
+//debug del at release
+import * as SPE from './libs/threejs/SPE'
+window.SPE = SPE
 
 window.levelDirs = ['帮助','水瓶座','双鱼座','白羊座','金牛座','双子座','巨蟹座','狮子座','处女座 ','天秤座','天蝎座','射手座','魔羯座']
 window.DirDiff = [0,0,1,0,1,1,2,2,2,3,3,3,3]
@@ -42,10 +52,7 @@ var globleDef ;
 var groupsDef ;
 
 // var flySound = new Audio('audio/collision.mp3');
-var winSound1 = new Audio('audio/crwin.mp3');
-var winSound2 = new Audio('audio/huawin.mp3');
-var colStaticSound = new Audio('audio/crwall.mp3');
-var colCanSound = new Audio('audio/crcan.mp3');
+
 
 wx.showShareMenu()
 wx.onShareAppMessage(function () {
@@ -60,6 +67,7 @@ function main(){
 
   [window.currentDirIndex, window.currentFileIndex] = getDirLevel();
   initThree();
+  initOther();
   InitUi()
   animate();
 }
@@ -70,17 +78,17 @@ function InitUi(){
 
   var placeUi = new PlaceUi(ui);
   ui.addEventListener ('start', function(e) {
-    initLevel();
+    gl.initLevel();
   });
   // ui.addEventListener ('home', removeCubes);  
   ui.addEventListener ('selectDirFile', function(e){
     window.currentDirIndex = e.dirIndex;  window.currentFileIndex = e.fileIndex;
     setDirLevel(window.currentDirIndex, window.currentFileIndex)
-    initLevel();
+    gl.initLevel();
   });
   
   ui.addEventListener ('thisAgain', function(e){
-    initLevel();
+    gl.initLevel();
   });  
 
   ui.addEventListener ('playBack', function(e){
@@ -89,7 +97,7 @@ function InitUi(){
 
   ui.addEventListener ('next', function(e){
     passDirLevel()
-    initLevel();
+    gl.initLevel();
   });  
 }
 
@@ -143,28 +151,8 @@ function passDirLevel(){
 }
 
 //html
-var c = new function () {
-  this.gravity = 20
-  this.cameraY = 17
-  this.cameraZ = 38
-  this.LookatY = 15
-  this.LookatZ = 0
-  this.zoom = 1
-  this.disdanceHalf = 20
-  this.forceFactor = 0.1
-  this.groundY = 9
-  this.roomWidth = 30
-  this.deskHight = 10
-  this.ballRad = 1
-  this.canRad = 1.4
-  this.canHeight = 5
-  this.massBall = 5
-  this.massCan = 10
-  this.shootHeight = 4
-  this.level = 0
-};
-var camera, scene, renderer, particle, ballControls, hp, world, levels;
-var velocitySqLimit,oldTimeStep
+var c = new Config();
+var camera, scene, renderer
 var controls = {}
 function initThree() {
   var W = window.innerWidth, H = window.innerHeight;
@@ -198,20 +186,12 @@ function initThree() {
   // controls = new THREE.OrbitControls( camera, renderer.domElement );
   // controls.target.set (0, 5, 0)
   // controls.update();
-  particle = new Particle();    scene.add(particle.initParticles());
-  ballControls = new BallControls(camera, renderer.domElement, ballProcess);
-  // physics = new CannonHelper(0,-c.gravity,0, 1/60);  world=physics.world;
-  world = new OIMO.World({gravity: [0,-c.gravity,0], random:false, iterations:24})
-  hp = new OimoHelper(world, scene);
-  levels = new CanBallLevels(c, hp, ballControls, world)
-  velocitySqLimit = (c.ballRad/world.timeStep); 
-  oldTimeStep = world.timeStep    
 }
-var lastTime;var i;
+
 function animate(time) {
   TWEEN.update();
   requestAnimationFrame( animate );
-
+  var lastTime;
   // if(time && lastTime){
   //     var dt = (time - lastTime)/1000;
   //     // for (i = 0; i < 10; ++i)
@@ -219,7 +199,9 @@ function animate(time) {
   //     particle.tick(dt)
   // }
   world.step();
-  flyingCheck();
+  gl.flyingCheck();
+  world.step();
+  gl.flyingCheck();
 
   renderer.clear();
   renderer.render( scene, camera );
@@ -227,182 +209,13 @@ function animate(time) {
   lastTime = time;
 }
 
+var hp, world, levels, gl, ballControls;
+var arrBall = [], arrTarget = [];
+function initOther() {
+  world = new OIMO.World({gravity: [0,-c.gravity,0], random:false, iterations:8})    // physics = new CannonHelper(0,-c.gravity,0, 1/60);  world=physics.world;
+  hp = new OimoHelper(world, scene);
 
-var wall = null, ground = null 
-function clearLevel(){
-if(ground){
-  scene.remove(ground)
-  world.remove(ground.body)
-  ground.body = null; ground = null;
-}
-
-ballControls.arrTarget.forEach(function(item){
-  if (item){
-    if (item.body){
-      world.removeRigidBody(item.body)
-      item.body = null;
-    }
-    scene.remove(item)
-  }
-});  
-ballControls.arrTarget.splice(0,ballControls.arrTarget.length);
-
-ballControls.arrBall.forEach(function(item){
-  if (item){
-    if (item.body){
-      world.removeRigidBody(item.body)
-      item.body = null;
-    }
-    scene.remove(item)
-  }
-});  
-ballControls.arrBall.splice(0,ballControls.arrBall.length);
-
-flyingBalls.forEach(function(flyingBall, index) {
-      flyingBalls.splice(index,1)
-      world.removeRigidBody(flyingBall)
-      scene.remove(flyingBall.mesh)
-      flyingBall.mesh = null;
-      flyingBall = null;
-  })
-}
-
-function initLevel(index){
-  if (index === undefined){
-    index = window.currentFileIndex;
-  }
-  clearLevel();  
-  //far plane
-  wall = hp.addBox(c.roomWidth*2, 80,4*c.canRad,   0,0,-c.disdanceHalf-2*c.canHeight, {restitution:0.005});
-  ballControls.arrTarget.push(wall);
-  //ground
-  ground = hp.addBox(c.roomWidth, 0.2,3*c.ballRad,  0,c.groundY -0.1 ,c.disdanceHalf);
-
-  levels.go(index)
-  clearInterval(checkfun);  checkfun = setInterval(checkResult1, 1000)
-}
-var flyingBalls = []
-var velocitySqLimit, oldTimeStep, checkfun;
-var ballProcess = {
-zero : new THREE.Vector3(),
-selectBall : function (){
-  controls.enabled = false;
-},
-throwBall : function (ball, to, delta, tDist){
-  controls.enabled = true;
-  var flyingBall = ball.body;
-  to.sub(flyingBall.position).normalize()
-  var temp = tDist/delta;
-  console.log('tD tT  tv', tDist, delta, temp)
-  to.multiplyScalar(temp*c.forceFactor)
-  flyingBall.linearVelocity.copy(to)  //flyingBall.applyImpulse(this.zero, to);
-
-// var to = new THREE.Vector3();
-// to.set(0,c.shootHeight,-38)
-// to.normalize()
-// to.multiplyScalar(c.forceFactor)
-// flyingBall.linearVelocity.copy(to)
-  if (Math.abs(flyingBall.linearVelocity.z) >= velocitySqLimit) {
-      var dist2NearestZ = ball.body.position.z - levels.nearestZ ;
-      var distOneSteps = world.timeStep*(-ball.body.linearVelocity.z);
-      var distModLeft = dist2NearestZ % distOneSteps;
-      flyingBall.changeStepAtPosZ = ball.body.position.z - (dist2NearestZ - distModLeft) + 0.01
-      flyingBall.newTimeStep = c.ballRad/(-ball.body.linearVelocity.z)
-
-      console.log('change at:',flyingBall.changeStepAtPosZ, 'v',flyingBall.linearVelocity.z, 'vLmt', velocitySqLimit)
-  }
-  flyingBalls.push(flyingBall)
-  var index = ballControls.arrBall.indexOf(flyingBall.mesh)
-  ballControls.arrBall.splice(index, 1)
-  ball.body.onCollide = function(bodyOther, pos){
-      if (bodyOther !== ground.body){
-          if (bodyOther.isDynamic)
-            colCanSound.play();
-          else
-            colStaticSound.play();
-
-          particle.createExplosion(pos)
-      }
-  }
-}
-}
-function flyingCheck(){
-  var minTimeStep = oldTimeStep;
-  flyingBalls.forEach(function(flyingBall, index) {
-      var p = flyingBall.position;
-      if (p.y < 0|| p.x < -c.roomWidth || p.x > c.roomWidth){
-          flyingBalls.splice(index,1)
-          world.removeRigidBody(flyingBall)
-          scene.remove(flyingBall.mesh)
-          flyingBall.mesh = null;
-          flyingBall = null;
-          return;
-      }
-      // console.log('v', flyingBall.linearVelocity.z, 'p', flyingBall.position)
-      if (Math.abs(flyingBall.linearVelocity.z) < velocitySqLimit)
-          return;
-
-      if (flyingBall.position.z < flyingBall.changeStepAtPosZ && flyingBall.position.z > -c.disdanceHalf)
-      {
-          if (flyingBall.newTimeStep < minTimeStep)
-              minTimeStep = flyingBall.newTimeStep;
-      }
-  })
-  if (oldTimeStep !== world.timeStep) {
-    console.log(world.timeStep)
-  }
-
-  
-  if (minTimeStep !== world.timeStep) {
-      console.log('setTimeStep', minTimeStep)
-      world.setTimeStep(minTimeStep);
-  }
-  ballControls.arrTarget.forEach(function(item, index) {
-      var p = item.position;
-      if (p.y < 0|| p.x < -c.roomWidth || p.x > c.roomWidth){
-          if (item.body){
-              world.removeRigidBody(item.body)
-              item.body = null;
-          }
-          scene.remove(item)
-          ballControls.arrTarget.splice(index,1)
-          levels.nTarget--;
-      }
-  });
-}
-
-function checkResult1(){
-  if (levels.nTarget <= 0){
-      console.log('succeed')
-      if (window.currentFileIndex % 2 === 1) 
-        winSound1.play();
-      else
-        winSound2.play();
-      window.showPassLevel();  
-      return;
-  }
-  if (ballControls.arrBall.length === 0){
-      if (flyingBalls.length === 0){
-          setTimeout(checkResult2, 2000)
-      }else{
-          setTimeout(checkResult2, 4000)
-      }
-      clearInterval(checkfun);  checkfun = null;
-  }
-}
-function checkResult2(){
-  if (levels.nTarget <= 0){
-      console.log('succeed')
-
-      if (window.currentFileIndex % 2 === 1) 
-        winSound1.play();
-      else
-        winSound2.play();
-
-      window.showPassLevel();  
-  }
-  else{
-      console.log('failed')
-      window.showPassLevel();  
-  }
+  levels = new CanBallLevels(c, world, hp, arrTarget, arrBall)
+  gl = new GameLogic(c, scene, world, hp, levels, arrTarget, arrBall, controls)
+  ballControls = new BallControls(camera, renderer.domElement, gl, arrTarget, arrBall);
 }

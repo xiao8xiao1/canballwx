@@ -1,5 +1,5 @@
-import * as OIMO from './libs/threejs/oimo'
-var CanBallLevels = function(c, hp, ballControls, world){
+// import * as OIMO from './libs/threejs/oimo'
+var CanBallLevels = function(c, world, hp, arrTarget, arrBall){
     var levelFuncs = [];    
     
     var canWidth = 2*c.canRad,
@@ -27,17 +27,17 @@ var CanBallLevels = function(c, hp, ballControls, world){
     }
     function addDesk(h, zPos){
         var desk = hp.addBox(c.roomWidth,h,canRad*2,  0, h/2, zPos);
-        ballControls.arrTarget.push(desk);
+        arrTarget.push(desk);
     }
     function addBox(w, h, xPos,yPos,zPos, o){
         var desk = hp.addBox(w, h, canRad*2,  xPos, yPos+h/2, zPos, o)
-        ballControls.arrTarget.push(desk);
+        arrTarget.push(desk);
         return desk;
     }
     function addCan(xPos,yPos,zPos,o)
     {
         var can = hp.addCan(canWidth,canHeight,  xPos,yPos+canHeight/2,zPos,o)
-        ballControls.arrTarget.push(can); 
+        arrTarget.push(can); 
         _this.nTarget++;
         if (zPos + canRad > _this.nearestZ)  _this.nearestZ = zPos + canRad;
         return can;
@@ -45,7 +45,7 @@ var CanBallLevels = function(c, hp, ballControls, world){
     function addBall(xPos, o)
     {
         var ball = hp.addBall(ballWidth, xPos, c.groundY+ballRad , c.disdanceHalf, o)
-        ballControls.arrBall.push(ball);
+        arrBall.push(ball);
     }
     function addBalls(cnt){
         if (cnt === undefined)
@@ -57,7 +57,7 @@ var CanBallLevels = function(c, hp, ballControls, world){
     function addSwingBox(w, h, xPos,yPos,zPos){
         var desk = addBox(w, h, xPos,yPos,zPos, {move:true})
         var ball = hp.addBall(ballWidth, xPos, yPos+h+ballRad+w/2, zPos, {move:false})
-        ballControls.arrTarget.push(ball);
+        arrTarget.push(ball);
         var spring = [2, 0.3];
         world.add({ type:'jointHinge', body1:ball.body, body2:desk.body, pos1:[0, -ballRad-w/2, 0], pos2:[0, h/2, 0],
                     collision:false, spring:spring, min:90, max:-90, axe1:[0,0,1], axe2:[0,0,1]  });

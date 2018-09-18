@@ -1,5 +1,5 @@
-import * as THREE from './libs/threejs/three'
-import * as SPE from './libs/threejs/SPE'
+// import * as THREE from './libs/threejs/three'
+// import * as SPE from './libs/threejs/SPE'
 
 var Particle = function(){
     var emitter, particleGroup,
@@ -26,13 +26,14 @@ var Particle = function(){
         duration: 0.05,
         maxAge: {
             value: 0.5
-        }
+        },
+        maxParticleCount : 10
     };
     // Create particle group and emitter
     this.initParticles = function () {
         particleGroup = new SPE.Group({
             texture: {
-                value: THREE.ImageUtils.loadTexture('images/smokeparticle.png')
+                value: THREE.ImageUtils.loadTexture('./images/smokeparticle.png')
             },
             // blending: THREE.AdditiveBlending
         });

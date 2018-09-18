@@ -10,7 +10,7 @@
 	"compileType": "game",
 	"libVersion": "2.2.2",
 	"appid": "touristappid",
-	"projectname": "CanBall",
+	"projectname": "BallFlying",
 	"isGameTourist": true,
 	"condition": {
 		"search": {

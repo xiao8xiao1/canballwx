@@ -1,10 +1,8 @@
-import * as THREE from './libs/threejs/three'
+// import * as THREE from './libs/threejs/three'
 
-var BallControls = function(camera, domElement, ballProcess) {
+var BallControls = function(camera, domElement, gl, arrTarget, arrBall) {
     var scope = this;
     scope.enabled = true;
-    scope.arrBall = [];
-    scope.arrTarget = []
     var clock = new THREE.Clock();
     var rect = domElement.getBoundingClientRect();
     var pointerVector = new THREE.Vector2();
@@ -20,15 +18,15 @@ var BallControls = function(camera, domElement, ballProcess) {
     var startPointer = new THREE.Vector2();
     var endPointer = new THREE.Vector2();
 
-    wx.onTouchStart(onMouseDown)
-    wx.onTouchMove(onMouseMove)
-    wx.onTouchEnd(onMouseUp)
-	// domElement.addEventListener( 'touchstart', onMouseDown, false );
-	// domElement.addEventListener( 'touchend', onMouseUp, false );
-    // domElement.addEventListener( 'touchmove', onMouseMove, false );    
-    // domElement.addEventListener("mousedown", onMouseDown, false );
-    // domElement.addEventListener("mousemove", onMouseMove, false );
-    // domElement.addEventListener("mouseup", onMouseUp, false );
+    // wx.onTouchStart(onMouseDown)
+    // wx.onTouchMove(onMouseMove)
+    // wx.onTouchEnd(onMouseUp)
+	domElement.addEventListener( 'touchstart', onMouseDown, false );
+	domElement.addEventListener( 'touchend', onMouseUp, false );
+    domElement.addEventListener( 'touchmove', onMouseMove, false );    
+    domElement.addEventListener("mousedown", onMouseDown, false );
+    domElement.addEventListener("mousemove", onMouseMove, false );
+    domElement.addEventListener("mouseup", onMouseUp, false );
     // this.dispose = function () {
     //  window.removeEventListener( 'mousedown', onMouseDown, false );
     //  window.removeEventListener( 'mousemove', onMouseMove, false );
@@ -43,11 +41,11 @@ var BallControls = function(camera, domElement, ballProcess) {
         startPointer.x = pointer.clientX;
         startPointer.y = pointer.clientY;
             
-        var entity = intersectObjects(startPointer.x, startPointer.y, scope.arrBall)
+        var entity = intersectObjects(startPointer.x, startPointer.y, arrBall)
         // var pos = entity.point;
         if(/*pos &&*/ entity){
             selectBall = entity.object
-            ballProcess.selectBall(selectBall)
+            gl.selectBall(selectBall)
             // scope.dispatchEvent( { type: 'selectBall' } );
             // Set the movement plane
             // setScreenPerpCenter(pos,camera);
@@ -77,10 +75,10 @@ var BallControls = function(camera, domElement, ballProcess) {
         var pointer = e.changedTouches ? e.changedTouches[0] : e;
         endPointer.x = pointer.clientX;
         endPointer.y = pointer.clientY;               
-        var entity = intersectObjects(endPointer.x, endPointer.y, scope.arrTarget)
+        var entity = intersectObjects(endPointer.x, endPointer.y, arrTarget)
         if(entity)
         {
-            ballProcess.throwBall(selectBall, entity.point, delta, endPointer.sub(startPointer).length())
+            gl.throwBall(selectBall, entity.point, delta, endPointer.sub(startPointer).length())
         }
         
         selectBall = null;
