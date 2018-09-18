@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>canball</title>
+        <style>
+            html, body {
+                width: 100%;
+                height: 100%;
+                margin:0;
+                padding:0;
+                overflow: hidden;
+            }
+            #blocker {
+                position: absolute;
+                top:0px;
+                left:0px;
+                width: 304px;  
+                height: 540px; 
+                background-color: rgb(255,0,0);
+                overflow: hidden;
+            }
+        </style>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    </head>
+    <body>
+        <div id="blocker"></div>
+        <script src="canballwx/libs/threejs/three.js"></script>
+        <script src="OrbitControls.js"></script>
+        <script src="SPE.js"></script>
+        <script src="dat.gui.js"></script>
+        <script src="canballwx/libs/threejs/oimo.js"></script>
+        <!-- <script src="cannon.js"></script> -->
+        <script src="canballwx/oimoHelper.js"></script>
+        <!-- <script src="cannonhelper.js"></script> -->
+        <script src="canballwx/BallControls.js"></script>        
+        <script src="canballwx/canBallLevels.js"></script>
+        <script src="canballwx/particle.js"></script>
+        <script src="canballwx/config.js"></script>
+        <script src="canballwx/gameLogic.js"></script>
+<script>  
+
+var c = new Config();
+c.go = function() {
+        levels.setPara(c)
+        gl.initLevel(c.level)
+        console.log('c=', c)
+    }
+function showPassLevel(){
+    c.level++;
+    if (c.level > levels.getCnt())
+        c.level = 0;
+    gl.initLevel(c.level);
+}
+var gui = new dat.GUI();
+function initGui(){
+    gui.add(c, 'gravity', 10, 100).onChange(function(y){
+        world.setGravity([0,-y,0])
+    }),
+    gui.add(c, 'cameraY', 0, 100).onChange(function(y){
+                            camera.position.set(0,y,c.cameraZ)
+                            // camera.updateProjectionMatrix ()
+    });
+    gui.add(c, 'cameraZ', 0, 100).onChange(function(z){
+                            camera.position.set(0,c.cameraY,z)
+                            // camera.updateProjectionMatrix ()
+    });
+    gui.add(c, 'LookatY', -50, 50).onChange(function(y){
+                            camera.lookAt(0, y, c.LookatZ)
+                            // camera.updateMatrixWorld();
+                            // console.log('y z',c.LookatY, c.LookatZ)
+    });
+    gui.add(c, 'LookatZ', 0, 100).onChange(function(z){
+                            camera.lookAt(0, c.LookatY, z)
+                            // camera.updateMatrixWorld();
+                            // console.log('y z',c.LookatY, c.LookatZ)
+    });
+    gui.add(c, 'zoom', 0, 10).onChange(function(z){
+                            camera.zoom = z
+                            camera.updateProjectionMatrix();
+    });
+    gui.add(c, 'disdanceHalf', 5, 50);
+    gui.add(c, 'forceFactor', 0, 200);
+    gui.add(c, 'groundY', -5, 10);
+    gui.add(c, 'roomWidth', 5, 50);
+    gui.add(c, 'deskHight', 5, 100);
+    gui.add(c, 'ballRad', 0, 20);
+    gui.add(c, 'canRad', 0, 20);
+    gui.add(c, 'canHeight', 0, 20);
+    gui.add(c, 'massBall', 0, 20);
+    gui.add(c, 'massCan', 0, 20);
+    gui.add(c, 'shootHeight', 0, 10);
+    gui.add(c, 'level')
+    gui.add(c, 'go');
+}
+//to wx
+
+var camera, scene, renderer
+var controls = {}
+function initThree() {
+    var container = document.getElementById('blocker');
+    var W = container.offsetWidth, H = container.offsetHeight;
+
+    // var container = document.createElement( 'div' );  document.body.appendChild( container );  
+    // var W = window.innerWidth, H = window.innerHeight;
+    console.log(window.innerHeight, W, H)
+    // scene
+    scene = new THREE.Scene();
+    // scene.fog = new THREE.Fog( 0xffffff, 500, 10000 );
+    scene.background = new THREE.Color(0xc2ebce);
+    // camera
+    camera = new THREE.PerspectiveCamera( 45, W / H, 1, 1000 );
+    camera.position.set(0, c.cameraY, c.cameraZ);
+    camera.up.set(0,1,0);
+    camera.lookAt(new THREE.Vector3(0,c.LookatY,c.LookatZ));
+    camera.zoom = c.zoom
+    scene.add(camera);
+
+    // lights
+    scene.add( new THREE.AmbientLight( 0x111111 ) );
+    var light = new THREE.DirectionalLight( 0xffffff, 1.75 );
+    var d = 20;
+    light.position.set( 40, 20, 30 );
+    scene.add( light );
+    renderer = new THREE.WebGLRenderer( { alpha :true, antialias: true, precision: "mediump" } );
+    renderer.setSize( W, H );
+    renderer.setPixelRatio(window.devicePixelRatio);
+    // renderer.setClearColor( scene.fog.color );
+    renderer.autoClear = false; // To allow render overlay on top of sprited sphere
+    var axesHelper = new THREE.AxesHelper( 5 );  scene.add( axesHelper );
+    container.appendChild( renderer.domElement );
+
+    // controls = new THREE.OrbitControls( camera, renderer.domElement );
+    // controls.target.set (0, 5, 0)
+    // controls.update();
+}
+
+function animate(time) {
+//   TWEEN.update();
+  requestAnimationFrame( animate );
+  var lastTime;
+  // if(time && lastTime){
+  //     var dt = (time - lastTime)/1000;
+  //     // for (i = 0; i < 10; ++i)
+  //         physics.update(dt, 5);
+  //     particle.tick(dt)
+  // }
+  world.step();
+  gl.flyingCheck();
+  world.step();
+  gl.flyingCheck();
+
+  renderer.clear();
+  renderer.render( scene, camera );
+//   ui.render(renderer);    
+  lastTime = time;
+}
+
+var hp, world, levels, gl, ballControls;
+var arrBall = [], arrTarget = [];
+function initOther() {
+  world = new OIMO.World({gravity: [0,-c.gravity,0], random:false, iterations:8})    // physics = new CannonHelper(0,-c.gravity,0, 1/60);  world=physics.world;
+  hp = new OimoHelper(world, scene);
+
+  levels = new CanBallLevels(c, world, hp, arrTarget, arrBall)
+  gl = new GameLogic(c, scene, world, hp, levels, arrTarget, arrBall, controls)
+  ballControls = new BallControls(camera, renderer.domElement, gl, arrTarget, arrBall);
+}
+
+initGui()
+initThree();
+initOther()
+gl.initLevel(0);
+animate();
+</script>
+</body>
+</html>
