@@ -24,7 +24,8 @@ window.Particle = Particle
 window.TWEEN = TWEEN
 
 //debug del at release
-import * as SPE from './libs/threejs/SPE'
+// import * as SPE from './libs/threejs/SPE'
+var SPE = require('./libs/threejs/SPE');
 window.SPE = SPE
 
 window.levelDirs = ['帮助','水瓶座','双鱼座','白羊座','金牛座','双子座','巨蟹座','狮子座','处女座 ','天秤座','天蝎座','射手座','魔羯座']
