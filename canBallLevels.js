@@ -1,5 +1,5 @@
 // import * as OIMO from './libs/threejs/oimo'
-var CanBallLevels = function(c, world, hp, arrTarget, arrBall){
+var CanBallLevels = function(c, world, hp, arrTarget, arrBall, arrAttached){
     var levelFuncs = [];    
     
     var canWidth = 2*c.canRad,
@@ -22,6 +22,9 @@ var CanBallLevels = function(c, world, hp, arrTarget, arrBall){
     }
     this.go = function(index){
         this.nTarget = 0
+      // far plane
+      var wall = hp.addBox(c.roomWidth*2, 80,4*c.canRad,   0,0,-c.disdanceHalf-2*c.canHeight, {restitution:0.005});
+      arrTarget.push(wall);
         if (index < levelFuncs.length)
             levelFuncs[index]();
     }
@@ -59,10 +62,12 @@ var CanBallLevels = function(c, world, hp, arrTarget, arrBall){
         var ball = hp.addBall(ballWidth, xPos, yPos+h+ballRad+w/2, zPos, {move:false})
         arrTarget.push(ball);
         var spring = [2, 0.3];
-        world.add({ type:'jointHinge', body1:ball.body, body2:desk.body, pos1:[0, -ballRad-w/2, 0], pos2:[0, h/2, 0],
+        world.add({ type:'jointHinge', body1:ball.body, body2:desk.body, pos1:[0, 0, 0], pos2:[0, h/2+ballRad, 0],
                     collision:false, spring:spring, min:90, max:-90, axe1:[0,0,1], axe2:[0,0,1]  });
         desk.body.applyImpulse(new OIMO.Vec3(0,0,0), new OIMO.Vec3(100,0,0));
     }
+
+    
     function pileUpTBox(xPos,yPos,zPos){
         addBox(canRad*2, canHeight*2,    xPos,yPos,zPos)
         addBox(canHeight*2, canRad,  xPos,yPos+canHeight*2,zPos, {move:true})
@@ -104,6 +109,32 @@ var CanBallLevels = function(c, world, hp, arrTarget, arrBall){
         addCan(xPos , yPos, zPos);
     }
     ////////////////////////////////
+    function attach2body(body1, staticBody, attachToPos){
+        body1.attachTo = staticBody
+        body1.attachToPos = attachToPos
+        arrAttached.push(body1)
+    }
+    function addJoint(w, h, xPos,yPos,zPos){
+        _this.nTarget++;
+        var ball = hp.addBall(ballWidth, xPos, yPos, zPos, {kinematic:true});  arrTarget.push(ball);
+        var box = addCan(xPos,yPos-ballRad-h,zPos);
+        box.body.isKinematic = true;
+        attach2body(box.body, ball.body, new OIMO.Vec3(0,-ballRad-canHeight/2, 0))
+        return ball.body;
+    }
+    levelFuncs.push(function()
+    {
+        var zPos = -c.disdanceHalf+canRad, yPos=0;
+        addDesk(c.deskHight, zPos); 
+        yPos+=c.deskHight;
+        addCan(0,yPos,zPos)
+        addBalls(6)
+        var ballBody = addJoint(4,4,  -10, 20, 0);
+        var tween = new TWEEN.Tween(ballBody.position)
+        tween.repeat(10)
+        tween.yoyo(true).to({x: 10}, 2000)
+        tween.start()
+    })    
     levelFuncs.push(function()
     {
         var zPos = -c.disdanceHalf+canRad, yPos=0;

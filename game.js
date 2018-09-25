@@ -21,6 +21,7 @@ var GameLogic = require('gameLogic.js');
 window.THREE = THREE
 window.OIMO = OIMO
 window.Particle = Particle
+window.TWEEN = TWEEN
 
 //debug del at release
 import * as SPE from './libs/threejs/SPE'
@@ -209,13 +210,14 @@ function animate(time) {
   lastTime = time;
 }
 
-var hp, world, levels, gl, ballControls;
-var arrBall = [], arrTarget = [];
+var hp, world, levels, gl, ballControls, particle;
+var arrBall = [], arrTarget = [], arrAttached = [];
 function initOther() {
+  particle = new Particle(scene);   particle.initParticles();
   world = new OIMO.World({gravity: [0,-c.gravity,0], random:false, iterations:8})    // physics = new CannonHelper(0,-c.gravity,0, 1/60);  world=physics.world;
   hp = new OimoHelper(world, scene);
 
-  levels = new CanBallLevels(c, world, hp, arrTarget, arrBall)
-  gl = new GameLogic(c, scene, world, hp, levels, arrTarget, arrBall, controls)
-  ballControls = new BallControls(camera, renderer.domElement, gl, arrTarget, arrBall);
+  levels = new CanBallLevels(c, world, hp, arrTarget, arrBall, arrAttached)
+  gl = new GameLogic(c, scene, world, hp, levels, particle, arrTarget, arrBall, arrAttached, controls)
+  ballControls = new BallControls(camera, renderer.domElement, gl, arrTarget, arrBall)
 }

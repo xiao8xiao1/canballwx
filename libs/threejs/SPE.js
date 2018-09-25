@@ -1,4 +1,4 @@
-import * as THREE from './three'
+// import * as THREE from './three'
 
 /* shader-particle-engine 1.0.6
  * 
@@ -2371,7 +2371,7 @@ SPE.Group.prototype.addPool = function( numEmitters, emitterOptions, createNew )
 
 
 
-SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
+SPE.Group.prototype._triggerSingleEmitter = function( pos , attachTo) {
     'use strict';
 
     var emitter = this.getFromPool(),
@@ -2384,18 +2384,17 @@ SPE.Group.prototype._triggerSingleEmitter = function( pos ) {
 
     // TODO:
     // - Make sure buffers are update with thus new position.
+    emitter.attachTo = attachTo;
     // if ( pos instanceof THREE.Vector3 ) 
     {
         emitter.position.value.copy( pos );
-
-        // Trigger the setter for this property to force an
-        // update to the emitter's position attribute.
         emitter.position.value = emitter.position.value;
     }
 
     emitter.enable();
 
     setTimeout( function() {
+        emitter.attachTo = undefined;
         emitter.disable();
         self.releaseIntoPool( emitter );
     }, ( Math.max( emitter.duration, ( emitter.maxAge.value + emitter.maxAge.spread ) ) ) * 1000 );
@@ -3440,7 +3439,13 @@ SPE.Emitter.prototype.tick = function( dt ) {
         this.age = 0.0;
         return;
     }
-
+    //canball
+    if (this.attachTo){
+        this.position.value.copy( this.attachTo.position );
+        this.position.value = this.position.value;
+        this.velocity.value.copy( this.attachTo.position ).normalize().multiplyScalar(-10);
+        this.velocity.value = this.velocity.value;        
+    }
 
     var activationStart = this.particleCount === 1 ? activationIndex : ( activationIndex | 0 ),
         activationEnd = Math.min( activationStart + ppsDt, this.activationEnd ),

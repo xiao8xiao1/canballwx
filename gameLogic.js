@@ -1,11 +1,10 @@
 // import * as THREE from './libs/threejs/three'
 
-var GameLogic = function(c, scene, world, hp, levels, arrTarget, arrBall, controls) {
-  var winSound1 = new Audio('canballwx/audio/crwin.mp3');
-  var winSound2 = new Audio('canballwx/audio/huawin.mp3');
-  var colStaticSound = new Audio('canballwx/audio/crwall.mp3');
-  var colCanSound = new Audio('canballwx/audio/crcan.mp3');
-  var particle = new Particle();    scene.add(particle.initParticles());    
+var GameLogic = function(c, scene, world, hp, levels, particle, arrTarget, arrBall, arrAttached, controls) {
+  var winSound1 = new Audio('audio/crwin.mp3');
+  var winSound2 = new Audio('audio/huawin.mp3');
+  var colStaticSound = new Audio('audio/crwall.mp3');
+  var colCanSound = new Audio('audio/crcan.mp3');
 
     var wall = null, ground = null 
     this.clearLevel = function (){
@@ -51,9 +50,6 @@ var GameLogic = function(c, scene, world, hp, levels, arrTarget, arrBall, contro
         index = window.currentFileIndex;
       }
       this.clearLevel();  
-      //far plane
-      wall = hp.addBox(c.roomWidth*2, 80,4*c.canRad,   0,0,-c.disdanceHalf-2*c.canHeight, {restitution:0.005});
-      arrTarget.push(wall);
       //ground
       ground = hp.addBox(c.roomWidth, 0.2,3*c.ballRad,  0,c.groundY -0.1 ,c.disdanceHalf);
   
@@ -72,7 +68,10 @@ var GameLogic = function(c, scene, world, hp, levels, arrTarget, arrBall, contro
 
   this.throwBall = function (ball, to, delta, tDist){
     controls.enabled = true;
+    particle.createTail(ball)
     var flyingBall = ball.body;
+    if (!flyingBall)
+      console.log('flyingBall err.', ball)
     to.sub(flyingBall.position).normalize()
     var temp = tDist/delta;
     console.log('tD tT  tv', tDist, delta, temp)
@@ -104,6 +103,14 @@ var GameLogic = function(c, scene, world, hp, levels, arrTarget, arrBall, contro
               colStaticSound.play();
   
             particle.createExplosion(pos)
+        }
+        
+        var index = arrAttached.indexOf(bodyOther)
+        if (index != -1){
+          bodyOther.isKinematic = false;
+          bodyOther.attachTo = null;
+          bodyOther.attachToPos = null;
+          arrAttached.splice(index, 1)  
         }
     }
   }
@@ -151,6 +158,10 @@ var GameLogic = function(c, scene, world, hp, levels, arrTarget, arrBall, contro
             levels.nTarget--;
         }
     });
+
+    arrAttached.forEach(function(item) {
+      item.position.addVectors(item.attachTo.position, item.attachToPos)
+    })
   }
   
   function checkResult1(){

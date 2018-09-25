@@ -23,7 +23,7 @@ var BallControls = function(camera, domElement, gl, arrTarget, arrBall) {
     // wx.onTouchEnd(onMouseUp)
 	domElement.addEventListener( 'touchstart', onMouseDown, false );
 	domElement.addEventListener( 'touchend', onMouseUp, false );
-    domElement.addEventListener( 'touchmove', onMouseMove, false );    
+    domElement.addEventListener( 'touchmove', onMouseMove, false );
     domElement.addEventListener("mousedown", onMouseDown, false );
     domElement.addEventListener("mousemove", onMouseMove, false );
     domElement.addEventListener("mouseup", onMouseUp, false );

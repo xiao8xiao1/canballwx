@@ -25,19 +25,20 @@
     </head>
     <body>
         <div id="blocker"></div>
-        <script src="canballwx/libs/threejs/three.js"></script>
-        <script src="OrbitControls.js"></script>
-        <script src="SPE.js"></script>
-        <script src="dat.gui.js"></script>
-        <script src="canballwx/libs/threejs/oimo.js"></script>
+        <script src="./libs/threejs/three.js"></script>
+        <script src="../OrbitControls.js"></script>
+        <script src="./libs/threejs/SPE.js"></script>
+        <script src="../dat.gui.js"></script>
+        <script src="./libs/threejs/oimo.js"></script> 
+        <script src="./libs/threejs/tween.js"></script>
         <!-- <script src="cannon.js"></script> -->
-        <script src="canballwx/oimoHelper.js"></script>
+        <script src="./oimoHelper.js"></script>
         <!-- <script src="cannonhelper.js"></script> -->
-        <script src="canballwx/BallControls.js"></script>        
-        <script src="canballwx/canBallLevels.js"></script>
-        <script src="canballwx/particle.js"></script>
-        <script src="canballwx/config.js"></script>
-        <script src="canballwx/gameLogic.js"></script>
+        <script src="./BallControls.js"></script>        
+        <script src="./canBallLevels.js"></script>
+        <script src="./particle.js"></script>
+        <script src="./config.js"></script>
+        <script src="./gameLogic.js"></script>
 <script>  
 
 var c = new Config();
@@ -67,11 +68,13 @@ function initGui(){
     });
     gui.add(c, 'LookatY', -50, 50).onChange(function(y){
                             camera.lookAt(0, y, c.LookatZ)
+                            controls.target.set (0, y, c.LookatZ)
                             // camera.updateMatrixWorld();
                             // console.log('y z',c.LookatY, c.LookatZ)
     });
     gui.add(c, 'LookatZ', 0, 100).onChange(function(z){
                             camera.lookAt(0, c.LookatY, z)
+                            controls.target.set (0, c.LookatY, z)                            
                             // camera.updateMatrixWorld();
                             // console.log('y z',c.LookatY, c.LookatZ)
     });
@@ -113,7 +116,7 @@ function initThree() {
     camera.position.set(0, c.cameraY, c.cameraZ);
     camera.up.set(0,1,0);
     camera.lookAt(new THREE.Vector3(0,c.LookatY,c.LookatZ));
-    camera.zoom = c.zoom
+    camera.zoom = c.zoom; camera.updateProjectionMatrix();
     scene.add(camera);
 
     // lights
@@ -130,21 +133,20 @@ function initThree() {
     var axesHelper = new THREE.AxesHelper( 5 );  scene.add( axesHelper );
     container.appendChild( renderer.domElement );
 
-    // controls = new THREE.OrbitControls( camera, renderer.domElement );
-    // controls.target.set (0, 5, 0)
-    // controls.update();
+    controls = new THREE.OrbitControls( camera, renderer.domElement );
+    controls.target.set (0, c.LookatY, c.LookatZ)
+    controls.update();
 }
-
+var lastTime;
 function animate(time) {
-//   TWEEN.update();
+  TWEEN.update();
   requestAnimationFrame( animate );
-  var lastTime;
-  // if(time && lastTime){
-  //     var dt = (time - lastTime)/1000;
-  //     // for (i = 0; i < 10; ++i)
-  //         physics.update(dt, 5);
-  //     particle.tick(dt)
-  // }
+  if(time && lastTime){
+      var dt = (time - lastTime)/1000;
+      // for (i = 0; i < 10; ++i)
+        //   physics.update(dt, 5);
+    //   particle.tick(dt)
+  }
   world.step();
   gl.flyingCheck();
   world.step();
@@ -156,15 +158,16 @@ function animate(time) {
   lastTime = time;
 }
 
-var hp, world, levels, gl, ballControls;
-var arrBall = [], arrTarget = [];
+var hp, world, levels, gl, ballControls, particle;
+var arrBall = [], arrTarget = [], arrAttached = [];
 function initOther() {
+  particle = new Particle(scene);   particle.initParticles();
   world = new OIMO.World({gravity: [0,-c.gravity,0], random:false, iterations:8})    // physics = new CannonHelper(0,-c.gravity,0, 1/60);  world=physics.world;
   hp = new OimoHelper(world, scene);
 
-  levels = new CanBallLevels(c, world, hp, arrTarget, arrBall)
-  gl = new GameLogic(c, scene, world, hp, levels, arrTarget, arrBall, controls)
-  ballControls = new BallControls(camera, renderer.domElement, gl, arrTarget, arrBall);
+  levels = new CanBallLevels(c, world, hp, arrTarget, arrBall, arrAttached)
+  gl = new GameLogic(c, scene, world, hp, levels, particle, arrTarget, arrBall, arrAttached, controls)
+  ballControls = new BallControls(camera, renderer.domElement, gl, arrTarget, arrBall)
 }
 
 initGui()

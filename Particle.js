@@ -1,9 +1,9 @@
 // import * as THREE from './libs/threejs/three'
 // import * as SPE from './libs/threejs/SPE'
 
-var Particle = function(){
-    var emitter, particleGroup,
-    emitterSettings = {
+var Particle = function(scene){
+    var explodeGroup,tailGroup;
+    var explodeSettings = {
         type: SPE.distributions.SPHERE,
         position: {
             spread: new THREE.Vector3(2),
@@ -26,29 +26,61 @@ var Particle = function(){
         duration: 0.05,
         maxAge: {
             value: 0.5
-        },
-        maxParticleCount : 10
+        }
     };
+    var tailSettings = new SPE.Emitter({
+        // type: SPE.distributions.SPHERE,
+        maxAge: {
+                value: 0.3
+            },
+        position: {
+            value: new THREE.Vector3(0, 0, 0),
+        },
+        velocity: {
+            value: new THREE.Vector3( 0, 0,  0)
+        },
+        color: {
+            value: [ new THREE.Color('white'), new THREE.Color('red') ]
+        },
+        size: {
+            value: [2,0]
+        },
+        particleCount: 10,
+        direction: 1
+        })    
     // Create particle group and emitter
     this.initParticles = function () {
-        particleGroup = new SPE.Group({
+        var texture = THREE.ImageUtils.loadTexture('./images/smokeparticle.png');
+        explodeGroup = new SPE.Group({
             texture: {
-                value: THREE.ImageUtils.loadTexture('./images/smokeparticle.png')
+                value: texture
             },
             // blending: THREE.AdditiveBlending
         });
-        particleGroup.addPool( 10, emitterSettings, false );
+        explodeGroup.addPool( 10, explodeSettings, false );
+
+        tailGroup = new SPE.Group({
+            texture: {
+                value: texture
+            },
+            // blending: THREE.AdditiveBlending
+        });
+        tailGroup.addPool( 10, tailSettings, false );        
         // Add particle group to scene.
-        // scene.add( particleGroup.mesh );
-        return particleGroup.mesh;
+        scene.add( explodeGroup.mesh );
+        scene.add( tailGroup.mesh );
     }
     // Trigger an explosion and random co-ords.
     this.createExplosion = function (pos) {
-        var num = 150;
-        particleGroup.triggerPoolEmitter(1, pos);
+        explodeGroup.triggerPoolEmitter(1, pos);
     }
+
+    this.createTail = function (ball) {
+        tailGroup._triggerSingleEmitter(ball.position, ball);
+    }    
     this.tick = function (dt){
-        particleGroup.tick( dt );
+        explodeGroup.tick( dt );
+        tailGroup.tick( dt );
     }
 }//end of particle 
 

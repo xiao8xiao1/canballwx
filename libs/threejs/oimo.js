@@ -12202,8 +12202,8 @@
 	        }else{
 	            min = o.min || 57.29578;
 	            max = o.max || 0;
-	            min = min * _Math.degtorad;
-	            max = max * _Math.degtorad;
+	            // min = min * _Math.degtorad;
+	            // max = max * _Math.degtorad;
 	        }
 
 	        var limit = o.limit || null;
