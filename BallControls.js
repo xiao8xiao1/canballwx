@@ -1,6 +1,6 @@
 // import * as THREE from './libs/threejs/three'
 
-var BallControls = function(camera, domElement, gl, arrTarget, arrBall) {
+var BallControls = function(scene, camera, domElement, gl, arrTarget, arrBall) {
     var scope = this;
     scope.enabled = true;
     var clock = new THREE.Clock();
@@ -17,64 +17,82 @@ var BallControls = function(camera, domElement, gl, arrTarget, arrBall) {
     var ray = new THREE.Raycaster();
     var startPointer = new THREE.Vector2();
     var endPointer = new THREE.Vector2();
-
-    // wx.onTouchStart(onMouseDown)
-    // wx.onTouchMove(onMouseMove)
-    // wx.onTouchEnd(onMouseUp)
-	domElement.addEventListener( 'touchstart', onMouseDown, false );
-	domElement.addEventListener( 'touchend', onMouseUp, false );
-    domElement.addEventListener( 'touchmove', onMouseMove, false );
-    domElement.addEventListener("mousedown", onMouseDown, false );
-    domElement.addEventListener("mousemove", onMouseMove, false );
-    domElement.addEventListener("mouseup", onMouseUp, false );
+    var mov2 = new THREE.Vector2();
+    var planeGeometry = new THREE.PlaneBufferGeometry(window.innerWidth*2 , window.innerHeight, 2, 2);
+    var planeMaterial = new THREE.MeshBasicMaterial({ visible: false, color: 0x808000, transparent :true, opacity :0.5 });
+    var planeXY = new THREE.Mesh(planeGeometry, planeMaterial); scene.add(planeXY);
+    scene.add(planeXY)
+    wx.onTouchStart(onMouseDown)
+    wx.onTouchMove(onMouseMove)
+    wx.onTouchEnd(onMouseUp)
+	// domElement.addEventListener( 'touchstart', onMouseDown, false );
+	// domElement.addEventListener( 'touchend', onMouseUp, false );
+    // domElement.addEventListener( 'touchmove', onMouseMove, false );
+    // domElement.addEventListener("mousedown", onMouseDown, false );
+    // domElement.addEventListener("mousemove", onMouseMove, false );
+    // domElement.addEventListener("mouseup", onMouseUp, false );
     // this.dispose = function () {
     //  window.removeEventListener( 'mousedown', onMouseDown, false );
     //  window.removeEventListener( 'mousemove', onMouseMove, false );
     //  window.removeEventListener( 'mouseup', onMouseUp, false );
     // };
-
+    var clickOffsetX = 0;
+    var isMovUp = false;
     function onMouseDown(e){
         if ( scope.enabled === false ) return;       
-        clock.getDelta();
-        // Find mesh from a ray
         var pointer = e.changedTouches ? e.changedTouches[0] : e;
         startPointer.x = pointer.clientX;
         startPointer.y = pointer.clientY;
-            
+
         var entity = intersectObjects(startPointer.x, startPointer.y, arrBall)
-        // var pos = entity.point;
-        if(/*pos &&*/ entity){
+
+        if(entity){
             selectBall = entity.object
             gl.selectBall(selectBall)
-            // scope.dispatchEvent( { type: 'selectBall' } );
-            // Set the movement plane
-            // setScreenPerpCenter(pos,camera);
-            // var idx = arrBall.indexOf(entity.object);
-            // if(idx !== -1){
-            // }
-        }
-        // e.preventDefault();
-        // e.stopPropagation();        
+            planeXY.position.copy(selectBall.position)
+            clickOffsetX = entity.point.x - selectBall.position.x;
+
+            isMovUp = false;
+        } else
+            selectBall = null;
     }
     function onMouseMove(e){
         if ( scope.enabled === false ) return;
         if (!selectBall) return;
-        // Move and project on the plane
-        // if (gplane) {
-        //    var pos = projectOntoPlane(e.clientX,e.clientY,gplane,camera);
-        //    if(pos){
-        //    }
-        // }
-        // e.preventDefault();
-        // e.stopPropagation();
+        var pointer = e.changedTouches ? e.changedTouches[0] : e;
+
+        mov2.x = pointer.clientX - startPointer.x;
+        mov2.y = startPointer.y - pointer.clientY;
+       
+        var entity = intersectObjects(pointer.clientX, pointer.clientY, [planeXY])
+        if(entity)
+        {
+            console.log(entity.point)
+            // console.log
+            if (entity.point.y < selectBall.position.y + selectBall.scale.y 
+                && Math.abs(mov2.x) > 0.2 && mov2.y*5 < Math.abs(mov2.x)){
+                if (selectBall.body)
+                    selectBall.body.setPosition( {x:entity.point.x - clickOffsetX, y:selectBall.body.position.y, z:selectBall.body.position.z});
+                isMovUp = false;
+            }else{
+                if (!isMovUp){
+                    isMovUp = true;
+                    clock.getDelta();
+                }
+            }
+        }
     }
     function onMouseUp(e) {
         if ( scope.enabled === false ) return;
         if (!selectBall) return;
+        if (!isMovUp) {
+            selectBall = null;
+            return;
+        }
         var delta = clock.getDelta();
         var pointer = e.changedTouches ? e.changedTouches[0] : e;
         endPointer.x = pointer.clientX;
-        endPointer.y = pointer.clientY;               
+        endPointer.y = pointer.clientY;
         var entity = intersectObjects(endPointer.x, endPointer.y, arrTarget)
         if(entity)
         {

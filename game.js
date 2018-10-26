@@ -218,7 +218,7 @@ function initOther() {
   world = new OIMO.World({gravity: [0,-c.gravity,0], random:false, iterations:8})    // physics = new CannonHelper(0,-c.gravity,0, 1/60);  world=physics.world;
   hp = new OimoHelper(world, scene);
 
-  levels = new CanBallLevels(c, world, hp, arrTarget, arrBall, arrAttached)
+  levels = new CanBallLevels(camera, c, world, hp, arrTarget, arrBall, arrAttached)
   gl = new GameLogic(c, scene, world, hp, levels, particle, arrTarget, arrBall, arrAttached, controls)
-  ballControls = new BallControls(camera, renderer.domElement, gl, arrTarget, arrBall)
+  ballControls = new BallControls(scene, camera, renderer.domElement, gl, arrTarget, arrBall)
 }

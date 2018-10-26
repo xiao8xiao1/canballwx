@@ -11,15 +11,6 @@
                 padding:0;
                 overflow: hidden;
             }
-            #blocker {
-                position: absolute;
-                top:0px;
-                left:0px;
-                width: 304px;  
-                height: 540px; 
-                background-color: rgb(255,0,0);
-                overflow: hidden;
-            }
         </style>
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     </head>
@@ -47,13 +38,21 @@ c.go = function() {
         gl.initLevel(c.level)
         console.log('c=', c)
     }
-function showPassLevel(){
-    c.level++;
+function showPassLevel(succ){
+    c.level += succ;
     if (c.level > levels.getCnt())
         c.level = 0;
     gl.initLevel(c.level);
+    console.log('Enter level', c.level)
 }
 var gui = new dat.GUI();
+window.addEventListener( 'mousedown', function(e){
+     if (e.shiftKey)
+         gui.closed = !gui.closed; 
+     else if (e.ctrlKey)
+        gl.initLevel(c.level);
+    }, false );
+
 function initGui(){
     gui.add(c, 'gravity', 10, 100).onChange(function(y){
         world.setGravity([0,-y,0])
@@ -93,19 +92,19 @@ function initGui(){
     gui.add(c, 'massBall', 0, 20);
     gui.add(c, 'massCan', 0, 20);
     gui.add(c, 'shootHeight', 0, 10);
-    gui.add(c, 'level')
+    gui.add(c, 'level').onChange(function(){
+        c.go()
+    })
     gui.add(c, 'go');
+    gui.closed = true;
 }
 //to wx
 
 var camera, scene, renderer
 var controls = {}
 function initThree() {
-    var container = document.getElementById('blocker');
-    var W = container.offsetWidth, H = container.offsetHeight;
-
-    // var container = document.createElement( 'div' );  document.body.appendChild( container );  
-    // var W = window.innerWidth, H = window.innerHeight;
+    var container = document.createElement( 'div' );  document.body.appendChild( container );  
+    var W = window.innerWidth, H = window.innerHeight;
     console.log(window.innerHeight, W, H)
     // scene
     scene = new THREE.Scene();
@@ -133,9 +132,9 @@ function initThree() {
     var axesHelper = new THREE.AxesHelper( 5 );  scene.add( axesHelper );
     container.appendChild( renderer.domElement );
 
-    controls = new THREE.OrbitControls( camera, renderer.domElement );
-    controls.target.set (0, c.LookatY, c.LookatZ)
-    controls.update();
+    // controls = new THREE.OrbitControls( camera, renderer.domElement );
+    // controls.target.set (0, c.LookatY, c.LookatZ)
+    // controls.update();
 }
 var lastTime;
 function animate(time) {
@@ -165,9 +164,9 @@ function initOther() {
   world = new OIMO.World({gravity: [0,-c.gravity,0], random:false, iterations:8})    // physics = new CannonHelper(0,-c.gravity,0, 1/60);  world=physics.world;
   hp = new OimoHelper(world, scene);
 
-  levels = new CanBallLevels(c, world, hp, arrTarget, arrBall, arrAttached)
+  levels = new CanBallLevels(camera, c, world, hp, arrTarget, arrBall, arrAttached)
   gl = new GameLogic(c, scene, world, hp, levels, particle, arrTarget, arrBall, arrAttached, controls)
-  ballControls = new BallControls(camera, renderer.domElement, gl, arrTarget, arrBall)
+  ballControls = new BallControls(scene, camera, renderer.domElement, gl, arrTarget, arrBall);
 }
 
 initGui()

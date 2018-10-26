@@ -70,13 +70,16 @@ var GameLogic = function(c, scene, world, hp, levels, particle, arrTarget, arrBa
     controls.enabled = true;
     particle.createTail(ball)
     var flyingBall = ball.body;
-    if (!flyingBall)
+    if (!flyingBall){
       console.log('flyingBall err.', ball)
+      return;
+    }
     to.sub(flyingBall.position).normalize()
     var temp = tDist/delta;
     console.log('tD tT  tv', tDist, delta, temp)
     to.multiplyScalar(temp*c.forceFactor)
     flyingBall.linearVelocity.copy(to)  //flyingBall.applyImpulse(this.zero, to);
+    flyingBall.isKinematic = false
   
   // var to = new THREE.Vector3();
   // to.set(0,c.shootHeight,-38)
@@ -95,6 +98,8 @@ var GameLogic = function(c, scene, world, hp, levels, particle, arrTarget, arrBa
     flyingBalls.push(flyingBall)
     var index = arrBall.indexOf(flyingBall.mesh)
     arrBall.splice(index, 1)
+    // setTimeout(levels.addTheBall, 1000)
+    levels.addTheBall();
     ball.body.onCollide = function(bodyOther, pos){
         if (bodyOther !== ground.body){
             if (bodyOther.isDynamic)
@@ -171,7 +176,7 @@ var GameLogic = function(c, scene, world, hp, levels, particle, arrTarget, arrBa
           winSound1.play();
         else
           winSound2.play();
-        window.showPassLevel();  
+        window.showPassLevel(1);
         return;
     }
     if (arrBall.length === 0){
@@ -192,11 +197,11 @@ var GameLogic = function(c, scene, world, hp, levels, particle, arrTarget, arrBa
         else
           winSound2.play();
   
-        window.showPassLevel();  
+        window.showPassLevel(1);  
     }
     else{
         console.log('failed')
-        window.showPassLevel();  
+        window.showPassLevel(0);  
     }
   }  
 }

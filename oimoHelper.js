@@ -10,9 +10,9 @@ var OimoHelper = function  (world, scene) {
     var mats = {};
     var materialType = 'MeshPhongMaterial'; //'MeshBasicMaterial';
 
-    geos['sphere'] = new THREE.BufferGeometry().fromGeometry( new THREE.SphereGeometry(1,16,10));
+    geos['sphere'] = new THREE.BufferGeometry().fromGeometry( new THREE.SphereGeometry(0.5,16,10));
     geos['box'] = new THREE.BufferGeometry().fromGeometry( new THREE.BoxGeometry(1,1,1));
-    geos['cylinder'] = new THREE.BufferGeometry().fromGeometry(new THREE.CylinderGeometry(1,1,1));
+    geos['cylinder'] = new THREE.BufferGeometry().fromGeometry(new THREE.CylinderGeometry(0.5,0.5,1));
     mats['sph']    = new THREE[materialType]( {shininess: 10, map: basicTexture(0), name:'sph' } );
     mats['box']    = new THREE[materialType]( {shininess: 10, map: basicTexture(2), name:'box' } );
     mats['cyl']    = new THREE[materialType]( {shininess: 10, map: basicTexture(4), name:'cyl' } );
@@ -24,7 +24,7 @@ var OimoHelper = function  (world, scene) {
 
         move: new THREE.MeshLambertMaterial({ name:'move', color:0x888800 }),
         contact: new THREE.MeshBasicMaterial({ name:'contact', color:0xA8BB19 }),
-        sleep: new THREE.MeshLambertMaterial({ name:'sleep', color:0x777777 }),
+        sleep: new THREE.MeshLambertMaterial({ name:'sleep', color:0x777777 , transparent:true}),
         statique: new THREE.MeshBasicMaterial({ name:'statique', color:0x333399, transparent:true, opacity:0.6 }),
         donut: new THREE.MeshBasicMaterial({ name:'donut', color:0xFFD700 }),
         kinematic: new THREE.MeshBasicMaterial({ name:'kinematic', color:0x33AA33, transparent:true, opacity:0.6 }),
@@ -46,7 +46,7 @@ var OimoHelper = function  (world, scene) {
             
         var b = world.add(o);
         var m = new THREE.Mesh( geos.sphere, mats.sph );
-        m.scale.set( w*0.5, w*0.5, w*0.5 );
+        m.scale.set( w, w, w );
         m.body = b;  
         b.connectMesh(m);
         scene.add(m)
@@ -76,7 +76,7 @@ var OimoHelper = function  (world, scene) {
 
         var b = world.add(o);
         var m = new THREE.Mesh( geos.cylinder, mats.cyl );
-        m.scale.set( w*0.5, h, w*0.5 );
+        m.scale.set( w, h, w );
         m.body = b;  
         b.connectMesh(m);
         scene.add(m)
