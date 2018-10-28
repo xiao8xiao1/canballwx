@@ -170,6 +170,7 @@ var GameLogic = function(c, scene, world, hp, levels, particle, arrTarget, arrBa
   }
   
   function checkResult1(){
+    return;
     if (levels.nTarget <= 0){
         console.log('succeed')
         if (window.currentFileIndex % 2 === 1) 

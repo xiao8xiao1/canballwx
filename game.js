@@ -153,7 +153,7 @@ function passDirLevel(){
 }
 
 //html
-var c = new Config();
+var cfg = new Config();
 var camera, scene, renderer
 var controls = {}
 function initThree() {
@@ -165,10 +165,10 @@ function initThree() {
   scene.background = new THREE.Color(0xc2ebce);
   // camera
   camera = new THREE.PerspectiveCamera( 45, W / H, 1, 1000 );
-  camera.position.set(0, c.cameraY, c.cameraZ);
+  camera.position.set(0, cfg.cameraY, cfg.cameraZ);
   camera.up.set(0,1,0);
-  camera.lookAt(new THREE.Vector3(0,c.LookatY,c.LookatZ));
-  camera.zoom = c.zoom
+  camera.lookAt(new THREE.Vector3(0,cfg.LookatY,cfg.LookatZ));
+  camera.zoom = cfg.zoom
   scene.add(camera);
 
   // lights
@@ -182,7 +182,7 @@ function initThree() {
   renderer.setPixelRatio(window.devicePixelRatio);
   // renderer.setClearColor( scene.fog.color );
   renderer.autoClear = false; // To allow render overlay on top of sprited sphere
-  var axesHelper = new THREE.AxesHelper( 5 );  scene.add( axesHelper );
+  var axesHelper = new THREE.AxesHelper( 10 );  scene.add( axesHelper );
   // var container = document.createElement( 'div' );  document.body.appendChild( container );  container.appendChild( renderer.domElement );
 
   // controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -215,10 +215,10 @@ var hp, world, levels, gl, ballControls, particle;
 var arrBall = [], arrTarget = [], arrAttached = [];
 function initOther() {
   particle = new Particle(scene);   particle.initParticles();
-  world = new OIMO.World({gravity: [0,-c.gravity,0], random:false, iterations:8})    // physics = new CannonHelper(0,-c.gravity,0, 1/60);  world=physics.world;
+  world = new OIMO.World({gravity: [0,-cfg.gravity,0], random:false, iterations:8})    // physics = new CannonHelper(0,-cfg.gravity,0, 1/60);  world=physics.world;
   hp = new OimoHelper(world, scene);
 
-  levels = new CanBallLevels(camera, c, world, hp, arrTarget, arrBall, arrAttached)
-  gl = new GameLogic(c, scene, world, hp, levels, particle, arrTarget, arrBall, arrAttached, controls)
+  levels = new CanBallLevels(camera, cfg, world, hp, arrTarget, arrBall, arrAttached)
+  gl = new GameLogic(cfg, scene, world, hp, levels, particle, arrTarget, arrBall, arrAttached, controls)
   ballControls = new BallControls(scene, camera, renderer.domElement, gl, arrTarget, arrBall)
 }

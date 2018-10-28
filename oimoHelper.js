@@ -33,9 +33,9 @@ var OimoHelper = function  (world, scene) {
     this.switchMat = function ( m, name ){
         if( m.material.name !== name ) m.material = mat[name];
     }
-    mats['sph']    = material
-    mats['box']    = material
-    mats['cyl']    = material    
+    // mats['sph']    = material
+    // mats['box']    = material
+    // mats['cyl']    = material    
 
     this.addBall = function(w, x,y,z, o){
         if (o === undefined)  o={};
@@ -59,7 +59,10 @@ var OimoHelper = function  (world, scene) {
         o.size=[w,h,d]; o.pos=[x,y,z];
 
         var b = world.add(o);
-        var m = new THREE.Mesh( geos.box, mats.box );
+        if (!o.wall)
+            var m = new THREE.Mesh( geos.box, mats.box );
+        else
+            var m = new THREE.Mesh( geos.box, mat['sleep'] );
         m.scale.set( w, h, d );
         m.body = b;  
         b.connectMesh(m);

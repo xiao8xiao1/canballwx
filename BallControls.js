@@ -22,15 +22,16 @@ var BallControls = function(scene, camera, domElement, gl, arrTarget, arrBall) {
     var planeMaterial = new THREE.MeshBasicMaterial({ visible: false, color: 0x808000, transparent :true, opacity :0.5 });
     var planeXY = new THREE.Mesh(planeGeometry, planeMaterial); scene.add(planeXY);
     scene.add(planeXY)
-    wx.onTouchStart(onMouseDown)
-    wx.onTouchMove(onMouseMove)
-    wx.onTouchEnd(onMouseUp)
-	// domElement.addEventListener( 'touchstart', onMouseDown, false );
-	// domElement.addEventListener( 'touchend', onMouseUp, false );
-    // domElement.addEventListener( 'touchmove', onMouseMove, false );
-    // domElement.addEventListener("mousedown", onMouseDown, false );
-    // domElement.addEventListener("mousemove", onMouseMove, false );
-    // domElement.addEventListener("mouseup", onMouseUp, false );
+    // wx.onTouchStart(onMouseDown)
+    // wx.onTouchMove(onMouseMove)
+    // wx.onTouchEnd(onMouseUp)
+	domElement.addEventListener( 'touchstart', onMouseDown, false );
+	domElement.addEventListener( 'touchend', onMouseUp, false );
+    domElement.addEventListener( 'touchmove', onMouseMove, false );
+    domElement.addEventListener("mousedown", onMouseDown, false );
+    domElement.addEventListener("mousemove", onMouseMove, false );
+    domElement.addEventListener("mouseup", onMouseUp, false );
+
     // this.dispose = function () {
     //  window.removeEventListener( 'mousedown', onMouseDown, false );
     //  window.removeEventListener( 'mousemove', onMouseMove, false );
